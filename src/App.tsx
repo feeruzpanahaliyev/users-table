@@ -10,7 +10,7 @@ function App() {
     <>
       <div style={{ display: "flex" }}>
         <SideBar />
-        <div style={{ marginLeft: "240px", padding: "20px", width: "100%" }}>
+        <div style={{ marginLeft: "103px", padding: "20px", width: "100%" }}>
           <Routes>
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:id" element={<UserDetailPage />} />

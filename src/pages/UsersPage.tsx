@@ -143,7 +143,7 @@ export default function UsersPage() {
         borderRadius: 9,
         flexDirection: "column",
         position: "relative",
-        minHeight: "600px",
+        minHeight: "200px",
         minWidth: "1200px",
       }}
     >
