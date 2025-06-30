@@ -11,6 +11,8 @@ import {
   Button,
   CircularProgress,
   TextField,
+  Select, 
+  MenuItem
 } from "@mui/material";
 import { useUserStore } from "../store/userStore";
 
@@ -110,13 +112,18 @@ export default function UserDetailPage() {
           <Typography variant="body1">
             <strong>Role:</strong>{" "}
             {isEditing ? (
-              <TextField
+              <Select
                 variant="standard"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
                 }
-              />
+                sx={{ minWidth: 120 }}
+              >
+                <MenuItem value="User">User</MenuItem>
+                <MenuItem value="Viewer">Viewer</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+              </Select>
             ) : (
               selectedUser.role
             )}
@@ -125,13 +132,17 @@ export default function UserDetailPage() {
           <Typography variant="body1">
             <strong>Status:</strong>{" "}
             {isEditing ? (
-              <TextField
+              <Select
                 variant="standard"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-              />
+                sx={{ minWidth: 120 }}
+              >
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </Select>
             ) : (
               selectedUser.status
             )}
@@ -156,7 +167,11 @@ export default function UserDetailPage() {
           <Box mt={2}>
             {isEditing ? (
               <>
-                <Button variant="contained" color="success" onClick={handleSave}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleSave}
+                >
                   Save
                 </Button>
                 <Button
@@ -169,7 +184,11 @@ export default function UserDetailPage() {
                 </Button>
               </>
             ) : (
-              <Button variant="contained" color="primary" onClick={() => setIsEditing(true)}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setIsEditing(true)}
+              >
                 Edit User
               </Button>
             )}

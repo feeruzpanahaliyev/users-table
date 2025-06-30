@@ -144,6 +144,7 @@ export default function UsersPage() {
         flexDirection: "column",
         position: "relative",
         minHeight: "600px",
+        minWidth: "1200px",
       }}
     >
       <Box sx={{ width: "100%", color: "white" }}>
@@ -162,8 +163,9 @@ export default function UsersPage() {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Search by name"
+                    label="Search by name/email"
                     variant="outlined"
+                    sx={{ color: "white" }}
                     onChange={(e) => {
                       field.onChange(e);
                       setSearchTerm(e.target.value);
@@ -192,6 +194,7 @@ export default function UsersPage() {
                     <Select
                       labelId="sort-by-label"
                       label="Sort By"
+                      sx={{ color: "white" }}
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
@@ -220,6 +223,7 @@ export default function UsersPage() {
                       labelId="sort-order-label"
                       label="Sort Order"
                       value={field.value}
+                      sx={{ color: "white" }}
                       onChange={(e) => {
                         field.onChange(e);
                         setFilters({ ...filters, sortOrder: e.target.value });
@@ -245,6 +249,7 @@ export default function UsersPage() {
                     <InputLabel>Role</InputLabel>
                     <Select
                       value={field.value || ""}
+                      sx={{ color: "white" }}
                       onChange={(e) => {
                         field.onChange(e);
                         setFilters({ ...filters, role: e.target.value });
@@ -290,12 +295,23 @@ export default function UsersPage() {
 
           <Grid size={2}>
             <ListItem>
-              <Button variant="contained" color = "primary" onClick={handleOpen}>Add User</Button>
+              <Button
+                sx={{
+                  fontSize: "1rem",
+                  padding: "12px 24px",
+                  minWidth: "50px",
+                }}
+                variant="contained"
+                color="primary"
+                onClick={handleOpen}
+              >
+                Add User
+              </Button>
+
               <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add New User</DialogTitle>
+                <DialogTitle mt={2}>Add New User</DialogTitle>
                 <DialogContent>
-                  {" "}
-                  <Box display="flex" gap={2} alignItems="center" my={2}>
+                  <Box display="flex" flexDirection="column" gap={2} my={2}>
                     <TextField
                       label="Name"
                       value={newUser.name}
@@ -312,22 +328,36 @@ export default function UsersPage() {
                       }
                       size="small"
                     />
-                    <TextField
-                      label="Role"
-                      value={newUser.role}
-                      onChange={(e) =>
-                        setNewUser({ ...newUser, role: e.target.value })
-                      }
-                      size="small"
-                    />
-                    <TextField
-                      label="Status"
-                      value={newUser.status}
-                      onChange={(e) =>
-                        setNewUser({ ...newUser, status: e.target.value })
-                      }
-                      size="small"
-                    />
+
+                    <FormControl size="small">
+                      <InputLabel>Role</InputLabel>
+                      <Select
+                        value={newUser.role}
+                        onChange={(e) =>
+                          setNewUser({ ...newUser, role: e.target.value })
+                        }
+                        label="Role"
+                      >
+                        <MenuItem value="User">User</MenuItem>
+                        <MenuItem value="Viewer">Viewer</MenuItem>
+                        <MenuItem value="Admin">Admin</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl size="small">
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={newUser.status}
+                        onChange={(e) =>
+                          setNewUser({ ...newUser, status: e.target.value })
+                        }
+                        label="Status"
+                      >
+                        <MenuItem value="Active">Active</MenuItem>
+                        <MenuItem value="Inactive">Inactive</MenuItem>
+                      </Select>
+                    </FormControl>
+
                     <TextField
                       label="Salary"
                       type="number"
@@ -340,20 +370,17 @@ export default function UsersPage() {
                       }
                       size="small"
                     />
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleAddUser}
-                    >
-                      Save
-                    </Button>
                   </Box>
                 </DialogContent>
+
                 <DialogActions>
                   <Button onClick={handleClose}>Cancel</Button>
                   <Button
+                    variant="contained"
+                    color="primary"
                     onClick={() => {
-                      handleAddUser;
+                      handleAddUser();
+                      handleClose();
                     }}
                   >
                     Save

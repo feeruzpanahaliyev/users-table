@@ -35,7 +35,7 @@ export default function StatisticsPage() {
 
   return (
     <Box p={1}>
-      <Typography mb ={20} color="navy"fontWeight={"bold"} variant="h3" gutterBottom>
+      <Typography mb ={20} color="navy"fontWeight={"bold"} variant="h3" justifyContent={"center"}gutterBottom>
         User Statistics
       </Typography>
 

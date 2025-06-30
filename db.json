@@ -4507,7 +4507,7 @@
     {
       "id": "566",
       "name": "Neila",
-      "role": "Admin",
+      "role": "Viewer",
       "email": "nhelksfp@fema.gov",
       "status": "Active",
       "salary": 2123
@@ -7962,11 +7962,19 @@
     },
     {
       "id": 1000,
-      "name": "man",
-      "email": "man@ll.com",
-      "role": "jjjjjjjj",
-      "status": "Active",
-      "salary": 5
+      "name": "Fehruz",
+      "email": "fp@gmail.com",
+      "role": "Admin",
+      "status": "Inactive",
+      "salary": 1113
+    },
+    {
+      "id": 1001,
+      "name": "hayden",
+      "email": "ethel@cain.com",
+      "role": "User",
+      "status": "Inactive",
+      "salary": 11113
     }
   ]
 }

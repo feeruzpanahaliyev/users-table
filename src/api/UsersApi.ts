@@ -64,7 +64,7 @@ export const updateUser = async (id: number, user: User): Promise<User> => {
 
   console.log("Response received. Status:", res.status);
 
-  const text = await res.text(); 
+  const text = await res.text();
 
   try {
     const json = JSON.parse(text);
@@ -77,15 +77,12 @@ export const updateUser = async (id: number, user: User): Promise<User> => {
   }
 };
 
-
 export const deleteUser = async (id: number) => {
   const res = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete user");
 };
-
-
 
 export async function addUser(user: User): Promise<User> {
   const response = await fetch(`${BASE_URL}`, {
