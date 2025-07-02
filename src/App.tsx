@@ -14,7 +14,6 @@ function App() {
           <Routes>
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:id" element={<UserDetailPage />} />
-            {/** <Route path="/users/:id" element={<UserDetailPage />} /> */}
             <Route path="/statistics" element={<StatisticsPage />} />
           </Routes>
         </div>
