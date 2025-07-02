@@ -73,8 +73,13 @@ export default function UsersPage() {
     salary: 0,
   });
 
-  useEffect(() => {
-    console.log("Filters in useEffect:", filters);
+  function loadUsers(
+    page: number,
+    filters: any,
+    setUsers: Function,
+    setTotalPages: Function,
+    setLoading: Function
+  ) {
     setLoading(true);
     fetchPaginatedUsers(page, USERS_PER_PAGE, filters)
       .then(({ resJson, totalCount }) => {
@@ -83,6 +88,10 @@ export default function UsersPage() {
       })
       .catch((err) => console.error("User fetch error:", err))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadUsers(page, filters, setUsers, setTotalPages, setLoading);
   }, [page, filters, setUsers]);
 
   const handleEdit = (user: User) => {
@@ -144,7 +153,11 @@ export default function UsersPage() {
         flexDirection: "column",
         position: "relative",
         minHeight: "200px",
-        minWidth: "1200px",
+        minWidth: "1520px",
+        marginLeft: "103px",
+        margin: '0 auto',
+        maxWidth: '100vw',
+        overflowX:  'hidden'
       }}
     >
       <Box sx={{ width: "100%", color: "white" }}>

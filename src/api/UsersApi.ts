@@ -48,8 +48,7 @@ export const fetchUserById = async (id: string | number) => {
 export const fetchAllUsers = async () => {
   const response = await fetch(BASE_URL);
   const resJson = await response.json();
-  console.log("API response:", resJson);
-  console.log("users:", resJson.data);
+  console.log("Users:", resJson);
   return resJson;
 };
 

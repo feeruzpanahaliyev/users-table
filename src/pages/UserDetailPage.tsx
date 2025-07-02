@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchUserById, updateUser } from "../api/UsersApi";
+import type { User } from "../store/userStore";
 
 import {
   Box,
@@ -11,8 +12,8 @@ import {
   Button,
   CircularProgress,
   TextField,
-  Select, 
-  MenuItem
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useUserStore } from "../store/userStore";
 
@@ -24,25 +25,42 @@ export default function UserDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
 
-  useEffect(() => {
+  const loadUserById = async (
+    id: string,
+    selectedUser: User | null,
+    setSelectedUser: (user: User | null) => void,
+    setLoading: (loading: boolean) => void
+  ) => {
     if (!selectedUser || selectedUser.id !== Number(id)) {
       setLoading(true);
-      fetchUserById(id!)
-        .then((data) => setSelectedUser(data))
-        .catch((err) => {
-          console.error("User fetch error:", err);
-          setSelectedUser(null);
-        })
-        .finally(() => setLoading(false));
+      try {
+        const data = await fetchUserById(id!);
+        setSelectedUser(data);
+      } catch (err) {
+        console.error("User fetch error:", err);
+        setSelectedUser(null);
+      } finally {
+        setLoading(false);
+      }
     }
+  };
 
+  const syncFormWithUser = (
+    selectedUser: User | null,
+    setFormData: (data: User) => void
+  ) => {
+    if (selectedUser) {
+      setFormData({ ...selectedUser });
+    }
+  };
+
+  useEffect(() => {
+    loadUserById(id!, selectedUser, setSelectedUser, setLoading);
     return () => setSelectedUser(null);
   }, [id, setSelectedUser]);
 
   useEffect(() => {
-    if (selectedUser) {
-      setFormData({ ...selectedUser });
-    }
+    syncFormWithUser(selectedUser, setFormData);
   }, [selectedUser]);
 
   const handleSave = async () => {
@@ -75,7 +93,7 @@ export default function UserDetailPage() {
 
   return (
     <Box p={4}>
-      <Card sx={{ maxWidth: 500, margin: "0 auto", padding: 2 }}>
+      <Card sx={{ maxWidth: 300, margin: "0 auto", padding: 2 }}>
         <CardContent>
           <Box display="flex" alignItems="center" mb={2}>
             <Avatar sx={{ width: 56, height: 56, mr: 2 }}>
@@ -94,7 +112,7 @@ export default function UserDetailPage() {
             )}
           </Box>
 
-          <Typography variant="body1">
+          <Typography variant="body1" component={"div"}>
             <strong>Email:</strong>{" "}
             {isEditing ? (
               <TextField
@@ -109,7 +127,7 @@ export default function UserDetailPage() {
             )}
           </Typography>
 
-          <Typography variant="body1">
+          <Typography variant="body1" component={"div"}>
             <strong>Role:</strong>{" "}
             {isEditing ? (
               <Select
@@ -129,7 +147,7 @@ export default function UserDetailPage() {
             )}
           </Typography>
 
-          <Typography variant="body1">
+          <Typography variant="body1" component={"div"}>
             <strong>Status:</strong>{" "}
             {isEditing ? (
               <Select
@@ -148,7 +166,7 @@ export default function UserDetailPage() {
             )}
           </Typography>
 
-          <Typography variant="body1">
+          <Typography variant="body1" component={"div"}>
             <strong>Salary:</strong>{" "}
             {isEditing ? (
               <TextField

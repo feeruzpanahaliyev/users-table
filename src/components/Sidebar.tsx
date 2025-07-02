@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function SideBar() {
     return (
-        <Drawer variant="permanent" anchor="left">
+        <Drawer variant="permanent" anchor="left" >
             <List>
                 <ListItemButton component ={Link} to="/users">
                     <ListItemText primary="Users" />

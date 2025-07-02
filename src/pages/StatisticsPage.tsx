@@ -7,10 +7,17 @@ import type { User } from "../store/userStore";
 export default function StatisticsPage() {
   const [users, setUsers] = useState<User[]>([]);
 
+  const loadAllUsers = async (setUsers: (users: User[]) => void) => {
+    try {
+      const data = await fetchAllUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
+
   useEffect(() => {
-    fetchAllUsers()
-      .then((data) => setUsers(data))
-      .catch((err) => console.error("Error fetching users:", err));
+    loadAllUsers(setUsers);
   }, []);
 
   const roleCounts: Record<string, number> = {};
@@ -33,8 +40,26 @@ export default function StatisticsPage() {
   const statusPieData = transformToPieData(statusCounts);
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" mr={9}>
-      <Card sx={{ backgroundColor: "#e7ecef", borderRadius: 4 }}>
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh"
+      width="100wv"
+          margin="0 auto"
+      maxWidth="100vw"
+      // overflowX="hidden"
+  
+    >
+      <Card
+        sx={{
+          backgroundColor: "#e7ecef",
+          borderRadius: 4,
+          width: "fit-content",
+          maxWidth: "100vh",
+          margin: "auto",
+        }}
+      >
         <Box p={1}>
           <Typography
             mb={10}

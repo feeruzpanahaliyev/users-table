@@ -8,9 +8,9 @@ import StatisticsPage from "./pages/StatisticsPage";
 function App() {
   return (
     <>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex" , maxWidth: '100vw'}}>
         <SideBar />
-        <div style={{ marginLeft: "103px", padding: "20px", width: "100%" }}>
+        <div style={{marginLeft: '103px', padding: "20px", width: "90vw" , minWidth: '90px',   display: 'block'}}>
           <Routes>
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:id" element={<UserDetailPage />} />
