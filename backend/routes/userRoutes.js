@@ -87,7 +87,7 @@ router.post("/", async (req, res) => {
   try {
     if (!req.body.id) {
       const lastUser = await User.findOne().sort({ id: -1 }).limit(1);
-      req.body.id = lastUser ? lastUser.id + 1 : 1;
+      req.body.id = lastUser ? Number(lastUser.id + 1) : 1;
     }
 
     const newUser = new User(req.body);
