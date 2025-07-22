@@ -20,25 +20,31 @@ import { useUserStore } from "../store/userStore";
 export default function UserDetailPage() {
   const { selectedUser, setSelectedUser } = useUserStore();
   const { id } = useParams();
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Partial<User>>({});
 
   const loadUserById = async (
-    id: string,
+    id: number | string,
     selectedUser: User | null,
     setSelectedUser: (user: User | null) => void,
-    setLoading: (loading: boolean) => void
+    setLoading: (loading: boolean) => void,
+    setError: (error: string | null) => void
   ) => {
     if (!selectedUser || selectedUser.id !== Number(id)) {
       setLoading(true);
+      setError(null);
       try {
-        const data = await fetchUserById(id!);
+        const data = await fetchUserById(Number(id!));
         setSelectedUser(data);
+        console.log("Fetched user:", data);
       } catch (err) {
         console.error("User fetch error:", err);
         setSelectedUser(null);
+        setError("Failed to load user. Try again.");
       } finally {
         setLoading(false);
       }
@@ -55,7 +61,7 @@ export default function UserDetailPage() {
   };
 
   useEffect(() => {
-    loadUserById(id!, selectedUser, setSelectedUser, setLoading);
+    loadUserById(id!, selectedUser, setSelectedUser, setLoading, setError);
     return () => setSelectedUser(null);
   }, [id, setSelectedUser]);
 
@@ -64,12 +70,19 @@ export default function UserDetailPage() {
   }, [selectedUser]);
 
   const handleSave = async () => {
+    setError(null);
+    if (formData.id == null) {
+      console.error("Cannot update user: ID is missing");
+      return;
+    }
+
     try {
       const updated = await updateUser(formData.id, formData);
       setSelectedUser(updated);
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update user", err);
+      setError("Failed to update user. Try again.");
     }
   };
 
@@ -78,6 +91,25 @@ export default function UserDetailPage() {
       <Box p={4}>
         <CircularProgress sx={{ color: "white" }} />
       </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Typography
+        color="error"
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "center",
+          fontWeight: "bold",
+          p: 1,
+          borderRadius: 1,
+          width: "100%",
+        }}
+      >
+        {error}
+      </Typography>
     );
   }
 

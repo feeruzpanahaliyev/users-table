@@ -1,4 +1,4 @@
-import { Box, Typography, Card } from "@mui/material";
+import { Box, Typography, Card, CircularProgress } from "@mui/material";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { fetchAllUsers } from "../api/UsersApi";
 import { useEffect, useState } from "react";
@@ -6,20 +6,27 @@ import type { User } from "../store/userStore";
 
 export default function StatisticsPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadAllUsers = async (setUsers: (users: User[]) => void) => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await fetchAllUsers();
-      setUsers(data);
+      setUsers(data.users);
     } catch (err) {
       console.error("Error fetching users:", err);
+      setError("Failed to load users. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadAllUsers(setUsers);
   }, []);
-
+  
   const roleCounts: Record<string, number> = {};
   const statusCounts: Record<string, number> = {};
 
@@ -39,6 +46,27 @@ export default function StatisticsPage() {
   const rolePieData = transformToPieData(roleCounts);
   const statusPieData = transformToPieData(statusCounts);
 
+  if (loading) return <CircularProgress sx={{ color: "white", m: 4 }} />;
+
+  if (error) {
+    return (
+      <Typography
+        color="error"
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "center",
+          fontWeight: "bold",
+          p: 1,
+          borderRadius: 1,
+          width: "100%",
+        }}
+      >
+        {error}
+      </Typography>
+    );
+  }
+
   return (
     <Box
       display="flex"
@@ -46,10 +74,9 @@ export default function StatisticsPage() {
       alignItems="center"
       minHeight="100vh"
       width="100wv"
-          margin="0 auto"
+      margin="0 auto"
       maxWidth="100vw"
       // overflowX="hidden"
-  
     >
       <Card
         sx={{
@@ -69,6 +96,7 @@ export default function StatisticsPage() {
             variant="h3"
             textAlign={"center"}
             gutterBottom
+            sx={{ letterSpacing: "-1.5px" }}
           >
             User Statistics
           </Typography>
@@ -87,6 +115,7 @@ export default function StatisticsPage() {
                 textAlign="center"
                 fontWeight={"bold"}
                 gutterBottom
+                sx={{ letterSpacing: "-1px" }}
               >
                 Role Distribution
               </Typography>
@@ -111,6 +140,7 @@ export default function StatisticsPage() {
                 textAlign="center"
                 fontWeight={"bold"}
                 gutterBottom
+                sx={{ letterSpacing: "-1px" }}
               >
                 Status Distribution
               </Typography>

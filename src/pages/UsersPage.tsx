@@ -39,15 +39,17 @@ import {
   addUser,
   fetchAllUsers,
 } from "../api/UsersApi";
-import type { User } from "../store/userStore";
+import type { User, Filters } from "../store/userStore";
 
 export default function UsersPage() {
   const navigate = useNavigate();
   const { filters, setSelectedUser, setFilters } = useUserStore();
 
   const [users, setUsers] = useState<User[]>([]);
-
+ 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
@@ -75,23 +77,29 @@ export default function UsersPage() {
 
   function loadUsers(
     page: number,
-    filters: any,
+    filters: Filters,
     setUsers: Function,
     setTotalPages: Function,
-    setLoading: Function
+    setLoading: Function,
+    setError: Function
   ) {
     setLoading(true);
+    setError(null);
+
     fetchPaginatedUsers(page, USERS_PER_PAGE, filters)
       .then(({ resJson, totalCount }) => {
-        setUsers(resJson);
+        setUsers(resJson.users);
         setTotalPages(Math.ceil(totalCount / USERS_PER_PAGE));
       })
-      .catch((err) => console.error("User fetch error:", err))
+      .catch((err) => {
+        console.error("User fetch error:", err);
+        setError("Failed to fetch users. Please try again.");
+      })
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    loadUsers(page, filters, setUsers, setTotalPages, setLoading);
+    loadUsers(page, filters, setUsers, setTotalPages, setLoading, setError);
   }, [page, filters, setUsers]);
 
   const handleEdit = (user: User) => {
@@ -100,6 +108,7 @@ export default function UsersPage() {
   };
 
   const handleSave = async () => {
+    setError(null);
     try {
       await updateUser(editingUserId!, editedUser);
       setUsers(users.map((u) => (u.id === editingUserId ? editedUser : u)));
@@ -107,21 +116,25 @@ export default function UsersPage() {
       setEditedUser({});
     } catch (err) {
       console.error("Failed to update user", err);
+      setError("Failed to update user. lease try again.");
     }
   };
 
   const handleDelete = async (id: number) => {
+    setError(null);
     try {
       await deleteUser(id);
       setUsers(users.filter((u) => u.id !== id));
     } catch (err) {
       console.error("Failed to delete user", err);
+      setError("Failed to delete user.");
     }
   };
   const handleAddUser = async () => {
+    setError(null);
     try {
       const allUsers = await fetchAllUsers();
-      const maxId = Math.max(...allUsers?.map((u: User) => u.id ?? 0));
+      const maxId = Math.max(...allUsers.users?.map((u: User) => u.id ?? 0));
       const userToCreate = { ...newUser, id: maxId + 1 };
 
       await addUser(userToCreate);
@@ -136,10 +149,30 @@ export default function UsersPage() {
       });
     } catch (err) {
       console.error("Failed to add user", err);
+      setError("Failed to add user.");
     }
   };
 
   if (loading) return <CircularProgress sx={{ color: "white", m: 4 }} />;
+
+  if (error) {
+    return (
+      <Typography
+        color="error"
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "center",
+          fontWeight: "bold",
+          p: 1,
+          borderRadius: 1,
+          width: "100%",
+        }}
+      >
+        {error}
+      </Typography>
+    );
+  }
 
   return (
     <Box
@@ -155,9 +188,10 @@ export default function UsersPage() {
         minHeight: "200px",
         minWidth: "1520px",
         marginLeft: "103px",
-        margin: '0 auto',
-        maxWidth: '100vw',
-        overflowX:  'hidden'
+        margin: "0 auto",
+        maxWidth: "100vw",
+        overflowX: "hidden",
+        overflowY: "auto",
       }}
     >
       <Box sx={{ width: "100%", color: "white" }}>
@@ -504,7 +538,7 @@ export default function UsersPage() {
                       }
                     />
                   ) : (
-                    user.salary
+                    `$ ${user.salary}`
                   )}
                 </TableCell>
                 <TableCell className="actions-cell" sx={{ color: "white" }}>
