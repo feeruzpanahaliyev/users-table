@@ -19,6 +19,7 @@
     "@mui/x-charts": "^8.6.0",
     "@types/react-datepicker": "^6.2.0",
     "antd": "^5.26.1",
+    "joi": "^17.13.3",
     "lucide-react": "^0.518.0",
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",

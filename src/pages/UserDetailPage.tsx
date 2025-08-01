@@ -27,6 +27,15 @@ export default function UserDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<User>>({});
 
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const isSaveDisabled =
+    !!emailError ||
+    !formData.name?.trim() ||
+    !formData.email?.trim();
+
   const loadUserById = async (
     id: number | string,
     selectedUser: User | null,
@@ -150,9 +159,17 @@ export default function UserDetailPage() {
               <TextField
                 variant="standard"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                error={!!emailError}
+                helperText={emailError}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData({ ...formData, email: value });
+                  if (!emailRegex.test(value)) {
+                    setEmailError("Enter a valid email address");
+                  } else {
+                    setEmailError(null);
+                  }
+                }}
               />
             ) : (
               selectedUser.email
@@ -221,6 +238,8 @@ export default function UserDetailPage() {
                   variant="contained"
                   color="success"
                   onClick={handleSave}
+                  disabled={isSaveDisabled}
+                  sx={{ opacity: isSaveDisabled ? 0.5 : 1 }}
                 >
                   Save
                 </Button>

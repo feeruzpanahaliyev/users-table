@@ -46,15 +46,22 @@ export default function UsersPage() {
   const { filters, setSelectedUser, setFilters } = useUserStore();
 
   const [users, setUsers] = useState<User[]>([]);
- 
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({} as User);
 
+  const isSaveEditDisabled =
+    !!roleError || !!statusError || !!emailError || !editedUser.name?.trim() || !editedUser.email?.trim();
+
+  
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -74,6 +81,8 @@ export default function UsersPage() {
     status: "Active",
     salary: 0,
   });
+  const isEmailSaveDisabled =
+    !!emailError || !newUser.name?.trim() || !newUser.email?.trim();
 
   function loadUsers(
     page: number,
@@ -107,16 +116,40 @@ export default function UsersPage() {
     setEditedUser({ ...user });
   };
 
+  const statusRegex = /^([Active]|[Inactive])$/;
+  const roleRegex = /^([Admin]|[User]|[Viewer])$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const handleSave = async () => {
     setError(null);
+
+    if (!statusRegex.test(editedUser.status ?? "")) {
+      setError("Status must be either 'Active' or 'Inactive'.");
+      return;
+    }
+    if (!roleRegex.test(editedUser.role ?? "")) {
+      setError("Role must be either 'Admin', 'User', or 'Viewer'.");
+      return;
+    }
+
+    if (!emailRegex.test(editedUser.email ?? "")) {
+      setEmailError("Enter a valid email address");
+      return;
+    }
+
     try {
-      await updateUser(editingUserId!, editedUser);
-      setUsers(users.map((u) => (u.id === editingUserId ? editedUser : u)));
+      const updatedUser = await updateUser(editingUserId!, {
+        ...editedUser,
+        id: Number(editingUserId),
+      });
+
+      setUsers(users.map((u) => (u.id === editingUserId ? updatedUser : u)));
+
       setEditingUserId(null);
       setEditedUser({});
     } catch (err) {
       console.error("Failed to update user", err);
-      setError("Failed to update user. lease try again.");
+      setError("Failed to update user. Please try again.");
     }
   };
 
@@ -370,9 +403,17 @@ export default function UsersPage() {
                     <TextField
                       label="Email"
                       value={newUser.email}
-                      onChange={(e) =>
-                        setNewUser({ ...newUser, email: e.target.value })
-                      }
+                      error={!!emailError}
+                      helperText={emailError}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setNewUser({ ...newUser, email: value });
+                        if (value && !emailRegex.test(value)) {
+                          setEmailError("Enter a valid email address");
+                        }
+                        else {
+                          setEmailError(null);}
+                      }}
                       size="small"
                     />
 
@@ -425,6 +466,8 @@ export default function UsersPage() {
                   <Button
                     variant="contained"
                     color="primary"
+                    disabled={isEmailSaveDisabled}
+                    sx={{ opacity: isEmailSaveDisabled ? 0.5 : 1 }}
                     onClick={() => {
                       handleAddUser();
                       handleClose();
@@ -451,9 +494,9 @@ export default function UsersPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users?.map((user: User) => (
+            {users?.map((user: User, index) => (
               <TableRow
-                key={user.id}
+                key={user.id ?? index}
                 hover
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
@@ -491,9 +534,18 @@ export default function UsersPage() {
                     <TextField
                       variant="standard"
                       value={editedUser.email}
-                      onChange={(e) =>
-                        setEditedUser({ ...editedUser, email: e.target.value })
-                      }
+                      error={!!emailError}
+                      helperText={emailError}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setEditedUser({ ...editedUser, email: value });
+
+                        if (value && !emailRegex.test(value)) {
+                          setEmailError("Enter a valid email address");
+                        } else {
+                          setEmailError(null);
+                        }
+                      }}
                     />
                   ) : (
                     user.email
@@ -504,9 +556,19 @@ export default function UsersPage() {
                     <TextField
                       variant="standard"
                       value={editedUser.role}
-                      onChange={(e) =>
-                        setEditedUser({ ...editedUser, role: e.target.value })
-                      }
+                      error={!!roleError}
+                      helperText={roleError}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setEditedUser({ ...editedUser, role: value });
+                        if (!/^(Admin|User|Viewer)?$/.test(value)) {
+                          setRoleError(
+                            "Role must be 'Admin', 'User', or 'Viewer'"
+                          );
+                        } else {
+                          setRoleError(null);
+                        }
+                      }}
                     />
                   ) : (
                     user.role
@@ -517,9 +579,19 @@ export default function UsersPage() {
                     <TextField
                       variant="standard"
                       value={editedUser.status}
-                      onChange={(e) =>
-                        setEditedUser({ ...editedUser, status: e.target.value })
-                      }
+                      error={!!statusError}
+                      helperText={statusError}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setEditedUser({ ...editedUser, status: value });
+                        if (!/^(Active|Inactive)?$/.test(value)) {
+                          setStatusError(
+                            "Status must be 'Active' or 'Inactive'"
+                          );
+                        } else {
+                          setStatusError(null);
+                        }
+                      }}
                     />
                   ) : (
                     user.status
@@ -544,7 +616,12 @@ export default function UsersPage() {
                 <TableCell className="actions-cell" sx={{ color: "white" }}>
                   {editingUserId === user.id ? (
                     <>
-                      <IconButton onClick={handleSave} color="primary">
+                      <IconButton
+                        onClick={handleSave}
+                        color="primary"
+                        disabled={isSaveEditDisabled}
+                        sx={{ opacity: isSaveEditDisabled ? 0.5 : 1 }}
+                      >
                         <SaveIcon />
                       </IconButton>
                       <IconButton

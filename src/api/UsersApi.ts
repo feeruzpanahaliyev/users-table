@@ -40,7 +40,7 @@ export const fetchPaginatedUsers = async (
 
 export const fetchUserById = async (id: number) => {
   try {
-    const response = await fetch(`${BASE_URL}/users/${id}`);
+    const response = await fetch(`${BASE_URL}/${id}`);
     if (!response.ok) throw new Error("User not found");
     const resJson = await response.json();
     console.log("User by ID:", resJson)

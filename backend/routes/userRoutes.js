@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const { validateUser } = require("../validators/userValidator");
+const Counter = require("../models/Counter");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   const {
     page = 1,
     per_page = 10,
@@ -31,7 +33,7 @@ router.get("/", async (req, res) => {
       .filter((u) => u !== null)
       .map((u) => ({
         ...u.toObject(),
-        id: u.id.toString(),
+        id: u.id,
         _id: undefined,
       }));
 
@@ -43,53 +45,50 @@ router.get("/", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching users:", err);
-    res.status(500).json({ error: "Internal server error" });
+    next(err);
   }
 });
-
-// By ID
-router.get('/users/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findOne({ id: Number(id) }); 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.json(user);
-  } catch (err) {
-    console.error("Error in /users/:id route:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 
 // Statistics page allusers
-router.get("/allUsers", async (req, res) => {
+router.get("/allUsers", async (req, res, next) => {
   try {
     const users = await User.find().lean();
 
     const formatted = users.map((u) => ({
       ...u,
-      id: u.id.toString(),
+      id: u.id,
       _id: undefined,
     }));
 
     res.json({ users: formatted });
   } catch (err) {
     console.error("Error fetching all users:", err);
-    res.status(500).json({ error: "Failed to fetch all users" });
+    next(err);
   }
 });
 
-
 // Add user
-router.post("/", async (req, res) => {
-  try {
-    if (!req.body.id) {
-      const lastUser = await User.findOne().sort({ id: -1 }).limit(1);
-      req.body.id = lastUser ? Number(lastUser.id + 1) : 1;
+router.post("/", async (req, res, next) => {
+  console.log("POST /users route hit");
+
+  if (!req.body.id) {
+      const counter = await Counter.findByIdAndUpdate(
+        { id: "id" }, 
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      req.body.id = counter.seq;
     }
 
+  console.log("Validating user:", req.body);
+
+  const { error } = validateUser(req.body);
+  if (error) {
+    console.error("Validation error:", error.details[0].message);
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
     const newUser = new User(req.body);
     const savedUser = await newUser.save();
 
@@ -102,17 +101,41 @@ router.post("/", async (req, res) => {
     res.status(201).json(formatted);
   } catch (err) {
     console.error("Error creating user:", err);
-    res.status(500).json({ error: "Failed to create user" });
+    next(err);
+  }
+});
+
+// By ID
+router.get("/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id) || id < 1) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const user = await User.findOne({ id: Number(id) });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error("Error in /users/:id route:", err);
+    next(err);
   }
 });
 
 // Update user
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res, next) => {
   try {
+    const { error } = validateUser(req.body);
+    if (error){ 
+      return res.status(400).json({ error: error.details[0].message });
+    };
+
     const updatedUser = await User.findOneAndUpdate(
-      { id: parseInt(req.params.id) }, 
+      { id: parseInt(req.params.id) },
       req.body,
-      { new: true }  
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
@@ -128,14 +151,18 @@ router.put("/:id", async (req, res) => {
     res.json(formatted);
   } catch (err) {
     console.error("Error updating user:", err);
-    res.status(500).json({ error: "Failed to update user" });
+    next(err);
   }
 });
 
+
+
 //Delete User
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
-    const deletedUser = await User.findOneAndDelete({ id: parseInt(req.params.id) });
+    const deletedUser = await User.findOneAndDelete({
+      id: parseInt(req.params.id),
+    });
 
     if (!deletedUser) {
       return res.status(404).json({ error: "User not found" });
@@ -144,7 +171,7 @@ router.delete("/:id", async (req, res) => {
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     console.error("Error deleting user:", err);
-    res.status(500).json({ error: "Failed to delete user" });
+    next(err);
   }
 });
 
